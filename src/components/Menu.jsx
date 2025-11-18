@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
-export default function Menu({ token, onAdd }) {
+export default function Menu({ token, onAdd, refresh = 0 }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('')
@@ -24,7 +24,7 @@ export default function Menu({ token, onAdd }) {
       const q = selected ? `?category=${encodeURIComponent(selected)}` : ''
       const res = await fetch(`${API}/menu/today${q}`)
       const data = await res.json()
-      setItems(data)
+      setItems(Array.isArray(data) ? data : [])
     } catch (e) {
       console.error(e)
     } finally {
@@ -35,6 +35,12 @@ export default function Menu({ token, onAdd }) {
   useEffect(() => {
     load('')
   }, [])
+
+  // Reload when parent requests refresh
+  useEffect(() => {
+    load(category)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh])
 
   const onFilter = (c) => {
     setCategory(c)
@@ -62,7 +68,7 @@ export default function Menu({ token, onAdd }) {
                 {i.category && <p className="text-xs text-blue-300/70">#{i.category}</p>}
                 {i.description && <p className="text-blue-200 text-sm">{i.description}</p>}
               </div>
-              <div className="text-white font-medium">{i.price.toFixed(2)} ₽</div>
+              <div className="text-white font-medium">{Number(i.price).toFixed(2)} ₽</div>
             </div>
             <button onClick={() => onAdd(i)} className="mt-3 w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition">Добавить</button>
           </div>

@@ -21,13 +21,21 @@ export default function AdminPanel({ token, user, onPublished }) {
   const submit = async (e) => {
     e.preventDefault()
     if (!canUse) return
+
+    // Normalize price (support comma and dot)
+    const priceNum = parseFloat(String(price).replace(',', '.'))
+    if (isNaN(priceNum) || priceNum < 0) {
+      setError('Введите корректную цену (например, 250.00)')
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
-      const body = { title, description, price: parseFloat(price), available, day, category: category || null }
+      const body = { title, description, price: priceNum, available, day, category: category || null }
       const res = await fetch(`${API}/menu`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || 'Ошибка публикации')
+      if (!res.ok) throw new Error(data.detail || (data?.errors?.[0]?.msg) || 'Ошибка публикации')
       setTitle('')
       setDescription('')
       setPrice('')
@@ -68,7 +76,7 @@ export default function AdminPanel({ token, user, onPublished }) {
         </div>
         <div>
           <label className="text-sm text-blue-200">Цена</label>
-          <input type="number" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-900/60 border border-slate-700 text-white" required />
+          <input type="text" inputMode="decimal" placeholder="например, 250.00" value={price} onChange={e=>setPrice(e.target.value)} className="w-full px-3 py-2 rounded bg-slate-900/60 border border-slate-700 text-white" required />
         </div>
         <div className="flex items-center gap-2">
           <input id="avail" type="checkbox" checked={available} onChange={e=>setAvailable(e.target.checked)} />

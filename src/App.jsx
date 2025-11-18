@@ -11,6 +11,7 @@ function App() {
   const [token, setToken] = useState('')
   const [cart, setCart] = useState([])
   const [orders, setOrders] = useState([])
+  const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
     const t = localStorage.getItem('auth_token')
@@ -72,16 +73,13 @@ function App() {
         <AuthPanel user={user} setUser={setUser} token={token} setToken={setToken} />
 
         {user?.role === 'admin' && (
-          <AdminPanel token={token} user={user} onPublished={() => {
-            // refresh menu by emitting a custom event listened by Menu or simply reload page state
-            // simplest: do nothing here; user can switch category to refresh; keep minimal logic
-          }} />
+          <AdminPanel token={token} user={user} onPublished={() => setRefresh(r => r + 1)} />
         )}
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-3">
             <h2 className="text-white font-semibold">Меню на сегодня</h2>
-            <Menu token={token} onAdd={addToCart} />
+            <Menu token={token} onAdd={addToCart} refresh={refresh} />
           </div>
           <div className="space-y-3">
             <Cart cart={cart} onQty={changeQty} onOrder={placeOrder} token={token} />
