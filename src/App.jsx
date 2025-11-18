@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AuthPanel from './components/AuthPanel'
 import Menu from './components/Menu'
 import Cart from './components/Cart'
+import AdminPanel from './components/AdminPanel'
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
@@ -69,6 +70,13 @@ function App() {
         </header>
 
         <AuthPanel user={user} setUser={setUser} token={token} setToken={setToken} />
+
+        {user?.role === 'admin' && (
+          <AdminPanel token={token} user={user} onPublished={() => {
+            // refresh menu by emitting a custom event listened by Menu or simply reload page state
+            // simplest: do nothing here; user can switch category to refresh; keep minimal logic
+          }} />
+        )}
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-3">
